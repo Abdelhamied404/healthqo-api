@@ -175,6 +175,29 @@ class UserController extends Controller
         return new LogResource(['message' => 'deleted']);
     }
 
+    public function find(Request $req, $q)
+    {
+        /**
+         * get all users starts with query and paginate with limit
+         */
+        $lim = $req->lim ? $req->lim : 5;
+        $users = User::where("name", "LIKE", "$q%")->orwhere("username", "LIKE", "$q%")->paginate($lim);
+        // check if not users found
+        if (!count($users)) {
+            return new ErrorResource(['message' => 'no users found']);
+        }
+        return new LogResource(["message" => 'found users', 'users' => $users]);
+    }
+
+    public function get(Request $req, $id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return new ErrorResource(['message' => 'no users found']);
+        }
+        return new LogResource(["message" => 'found users', 'user' => $user]);
+    }
+
     /**
      * utils
      */
