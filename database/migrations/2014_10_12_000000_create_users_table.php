@@ -22,12 +22,12 @@ class CreateUsersTable extends Migration
             $table->string('password');
 
             //extras
-            $table->text('address');
-            $table->string('state');
-            $table->string('country');
-            $table->string('gender');
-            $table->string('phone');
-            $table->text('avatar');
+            $table->text('address')->nullable();
+            $table->string('state')->nullable();
+            $table->string('country')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('phone')->nullable();
+            $table->text('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

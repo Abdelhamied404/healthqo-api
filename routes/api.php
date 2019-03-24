@@ -12,16 +12,22 @@
  */
 
 
-Route::group(['middleware' => ['auth:api']], function () {
+
+
+Route::group(['middleware' => ['HasAccess']], function () {
 
     /**
      * user
      */
 
-
-
-
-
-
+    Route::group(['prefix' => 'user'], function () {
+        Route::get('', "UserController@auth")->middleware('auth:api');
+        Route::get('login', "UserController@login");
+        Route::get('find', "UserController@find");
+        Route::get('logout', "UserController@logout")->middleware('auth:api');
+        Route::post('', "UserController@signup");
+        Route::post('update', "UserController@update")->middleware('auth:api');
+        Route::delete('', "UserController@destroy")->middleware('auth:api');
+    });
 
 });
