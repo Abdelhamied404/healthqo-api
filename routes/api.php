@@ -19,11 +19,11 @@ Route::group(['middleware' => ['HasAccess']], function () {
     /**
      * user
      */
-
     Route::group(['prefix' => 'user'], function () {
         Route::get('', "UserController@auth")->middleware('auth:api');
         Route::get('login', "UserController@login");
-        Route::get('find', "UserController@find");
+        Route::get('find/{q}', "UserController@find");
+        Route::get('get/{id}', "UserController@get");
         Route::get('logout', "UserController@logout")->middleware('auth:api');
         Route::post('', "UserController@signup");
         Route::post('update', "UserController@update")->middleware('auth:api');
