@@ -17,7 +17,7 @@
 Route::group(['middleware' => ['HasAccess']], function () {
 
     /**
-     * user
+     * user -- fully done!
      */
     Route::group(['prefix' => 'user'], function () {
         Route::get('', "UserController@auth")->middleware('auth:api');
@@ -28,6 +28,33 @@ Route::group(['middleware' => ['HasAccess']], function () {
         Route::post('', "UserController@signup");
         Route::post('update', "UserController@update")->middleware('auth:api');
         Route::delete('', "UserController@destroy")->middleware('auth:api');
+    });
+
+    /**
+     * doctor -- in-progress
+     */
+    Route::group(['prefix' => 'doctor'], function () {
+        Route::get('recommended', "DoctorController@getRecommended");
+        Route::post('', "DoctorController@store")->middleware('auth:api');
+    });
+
+    /**
+     * section -- done!
+     */
+    Route::group(['prefix' => 'section'], function () {
+        Route::get('', "SectionController@index");
+        Route::get('doctors', "SectionController@getDoctors");
+    });
+
+    /**
+     * post
+     */
+    Route::group(['prefix' => 'post'], function () {
+        Route::get('', "PostController@index");
+        Route::get('{id}', "PostController@show");
+        Route::post('', "PostController@store")->middleware('auth:api');
+        Route::put('{id}', "PostController@update");
+        Route::delete('{id}', "PostController@destroy");
     });
 
 });
