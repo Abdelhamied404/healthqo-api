@@ -46,4 +46,15 @@ Route::group(['middleware' => ['HasAccess']], function () {
         Route::get('doctors', "SectionController@getDoctors");
     });
 
+    /**
+     * post
+     */
+    Route::group(['prefix' => 'post'], function () {
+        Route::get('', "PostController@index");
+        Route::get('{id}', "PostController@show");
+        Route::post('', "PostController@store")->middleware('auth:api');
+        Route::put('{id}', "PostController@update");
+        Route::delete('{id}', "PostController@destroy");
+    });
+
 });
