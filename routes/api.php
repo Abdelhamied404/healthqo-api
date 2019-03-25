@@ -38,4 +38,12 @@ Route::group(['middleware' => ['HasAccess']], function () {
         Route::post('', "DoctorController@store")->middleware('auth:api');
     });
 
+    /**
+     * section -- done!
+     */
+    Route::group(['prefix' => 'section'], function () {
+        Route::get('', "SectionController@index");
+        Route::get('doctors', "SectionController@getDoctors");
+    });
+
 });
