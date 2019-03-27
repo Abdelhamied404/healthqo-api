@@ -118,17 +118,21 @@ class PostController extends Controller
         /**
          * preprocessing
          */
+        // get old post
+        $post = Post::with('user')->find($id);
+        // check if exists
+        if (!$post)
+            return new ErrorResource(['message' => "can't find this post"]);
+        // check if has access
+        $hasAccess = $req->user()['id'] == $post['user']['id'];
+        if (!$hasAccess)
+            return new ErrorResource(["message" => "it's not your post to update"]);
         // validating
         $req->validate([
             'title' => 'required|min:1',
             'body' => 'required|min:1',
             'tags' => 'required|min:1',
         ]);
-        // get old post
-        $post = Post::with('user')->find($id);
-        // check if exists
-        if (!$post)
-            return new ErrorResource(['message' => "can't find this post"]);
 
         /**
          * updating
@@ -151,17 +155,25 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $req, $id)
     {
         // delete a single post
         /**
          * init
          */
-        $post = Post::find($id);
+        // get the post
+        $post = Post::with('user')->find($id);
         // check if exists
         if (!$post)
             return new ErrorResource(["message" => "can't find your post"]);
+        // check if has access to delete this post
+        $hasAccess = $req->user()['id'] == $post['user']['id'];
+        if (!$hasAccess)
+            return new ErrorResource(["message" => "it's not your post to delete"]);
 
+        /**
+         * delete
+         */
         // try to delete
         if (!$post->delete())
             return new ErrorResource(["message" => "can't delete your post"]);

@@ -20,14 +20,17 @@ Route::group(['middleware' => ['HasAccess']], function () {
      * user -- fully done!
      */
     Route::group(['prefix' => 'user'], function () {
-        Route::get('', "UserController@auth")->middleware('auth:api');
         Route::get('login', "UserController@login");
         Route::get('find/{q}', "UserController@find");
         Route::get('get/{id}', "UserController@get");
-        Route::get('logout', "UserController@logout")->middleware('auth:api');
         Route::post('', "UserController@signup");
-        Route::post('update', "UserController@update")->middleware('auth:api');
-        Route::delete('', "UserController@destroy")->middleware('auth:api');
+        // need auth
+        Route::group(['middleware' => ['auth:api']], function () {
+            Route::get('', "UserController@auth")->middleware('auth:api');
+            Route::get('logout', "UserController@logout")->middleware('auth:api');
+            Route::post('update', "UserController@update")->middleware('auth:api');
+            Route::delete('', "UserController@destroy")->middleware('auth:api');
+        });
     });
 
     /**
@@ -47,14 +50,31 @@ Route::group(['middleware' => ['HasAccess']], function () {
     });
 
     /**
-     * post
+     * post -- in-progress
      */
     Route::group(['prefix' => 'post'], function () {
         Route::get('', "PostController@index");
         Route::get('{id}', "PostController@show");
-        Route::post('', "PostController@store")->middleware('auth:api');
-        Route::put('{id}', "PostController@update");
-        Route::delete('{id}', "PostController@destroy");
+        // need auth
+        Route::group(['middleware' => ['auth:api']], function () {
+            Route::post('', "PostController@store");
+            Route::put('{id}', "PostController@update");
+            Route::delete('{id}', "PostController@destroy");
+        });
+    });
+
+    /**
+     * comment -- in-progress
+     */
+    Route::group(['prefix' => 'comment'], function () {
+        Route::get('', "CommentController@index");
+        Route::get('{id}', "CommentController@show");
+        // need auth
+        Route::group(['middleware' => ['auth:api']], function () {
+            Route::post('', "CommentController@store");
+            Route::put('{id}', "CommentController@update");
+            Route::delete('{id}', "CommentController@destroy");
+        });
     });
 
 });
