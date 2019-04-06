@@ -7,8 +7,6 @@ use App\Chat;
 use App\Http\Resources\LogResource;
 use App\Http\Resources\ErrorResource;
 use App\Recipient;
-use App\Doctor;
-use Illuminate\Support\Facades\DB;
 use App\User;
 
 class ChatController extends Controller
