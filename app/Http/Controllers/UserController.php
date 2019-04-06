@@ -141,12 +141,15 @@ class UserController extends Controller
             if (in_array($key, $cols) && $key != "avatar" && $key != "password")
                 $user[$key] = $value;
         }
-        $user["password"] = bcrypt($req['password']);
+        // update password if set
+        if (isset($req['password']))
+            $user["password"] = bcrypt($req['password']);
+
         // get avatar from request
         $avatar = $req->file('avatar');
         if ($avatar) {
             // generate unique file name for the user and save it to the disk
-            $img_name = $req["username"] . "-profile." . $avatar->getClientOriginalExtension();
+            $img_name = $user["username"] . "-profile." . $avatar->getClientOriginalExtension();
             Storage::disk('local')->put($img_name, File::get($avatar));
             // move to public and get this path
             $avatar->move(public_path() . '/public/profile_pics/', $img_name);

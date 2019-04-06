@@ -47,7 +47,7 @@ class SectionController extends Controller
         /**
          * get doctors
          */
-        $doctors = Doctor::where("section_id", $section_id)->paginate($lim);
+        $doctors = Doctor::where("section_id", $section_id)->with('user')->paginate($lim);
         // check if not empty
         if (!count($doctors))
             return new ErrorResource(['message' => 'no doctors found in this section']);
