@@ -48,4 +48,13 @@ class User extends Authenticatable
     {
         return $this->hasMany("App\Post");
     }
+
+    public function Recipient()
+    {
+        return $this->hasOne("App\Recipient");
+    }
+    public function Message()
+    {
+        return $this->hasMany("App\Message");
+    }
 }

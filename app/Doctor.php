@@ -10,6 +10,9 @@ class Doctor extends Model
     protected $fillable = [
         'is_trusted', 'rate', 'certificate', 'clinic_address', 'hospital_address', 'user_id', 'section_id'
     ];
+    protected $hidden = [
+        'user_id', 'section_id'
+    ];
 
     public function section()
     {

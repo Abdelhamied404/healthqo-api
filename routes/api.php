@@ -34,7 +34,7 @@ Route::group(['middleware' => ['HasAccess']], function () {
     });
 
     /**
-     * doctor -- in-progress
+     * doctor -- in-progress => certificate
      */
     Route::group(['prefix' => 'doctor'], function () {
         Route::get('recommended', "DoctorController@getRecommended");
@@ -74,6 +74,18 @@ Route::group(['middleware' => ['HasAccess']], function () {
             Route::post('', "CommentController@store");
             Route::put('{id}', "CommentController@update");
             Route::delete('{id}', "CommentController@destroy");
+        });
+    });
+
+    /**
+     * chat -- in-progress
+     */
+    Route::group(['prefix' => 'chat'], function () {
+        // need auth
+        Route::group(['middleware' => ['auth:api']], function () {
+            Route::get('', "ChatController@index");
+            Route::get('{id}', "ChatController@show");
+            Route::post('', "ChatController@store");
         });
     });
 
