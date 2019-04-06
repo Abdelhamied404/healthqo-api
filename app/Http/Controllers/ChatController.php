@@ -31,7 +31,6 @@ class ChatController extends Controller
         return new LogResource(["message" => "chat found", "chat" => $chat]);
     }
 
-
     public function store(Request $req)
     {
         // create a new chat
@@ -102,7 +101,8 @@ class ChatController extends Controller
         return Chat::has('recipients', '=', count($recipients))
             ->whereHas('recipients', function ($query) use ($recipients) {
                 $query->whereIn('user_id', $recipients);
-            }, '=', count($recipients))->with('messages', 'recipients.user:id,name,username,avatar')->get();
+            }, '=', count($recipients))
+            ->with('messages', 'recipients.user:id,name,username,avatar')->get();
 
     }
 
