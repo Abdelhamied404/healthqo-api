@@ -20,6 +20,7 @@ class DoctorController extends Controller
     }
     public function store(Request $req)
     {
+        // update or register a new doctor
         /**
          * update user
          */
@@ -37,6 +38,11 @@ class DoctorController extends Controller
         // init doctors and cols of this model
         $curr_user_id = $req->user()['id'];
         $doctor = Doctor::where('user_id', $curr_user_id)->first();
+
+        if ($doctor == null) {
+            $doctor = new Doctor();
+            $doctor['user_id'] = $curr_user_id;
+        }
         $cols = Schema::getColumnListing('doctors');
         // check if section changed
         $old_sec_id = $doctor['section_id'];
