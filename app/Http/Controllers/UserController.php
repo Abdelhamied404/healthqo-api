@@ -22,7 +22,7 @@ class UserController extends Controller
         if (!$req->user()) {
             return new ErrorResource(["message" => "something went wrong please login again"]);
         }
-        return new LogResource(['message' => "you are authanticated", 'data' => $req->user()]);
+        return new LogResource(['message' => "you are authanticated", 'user' => $req->user()]);
     }
 
     public function signup(Request $req)
@@ -33,9 +33,9 @@ class UserController extends Controller
         // validating the request
         $req->validate([
             'name' => 'required|string|min:3',
-            'username' => 'required|string|min:3|unique:users',
             'email' => 'required|string|email|unique:users',
             'password' => 'required|string|min:6',
+            'gender' => 'required|string',
             'remember_me' => 'boolean'
         ]);
 
@@ -43,17 +43,23 @@ class UserController extends Controller
          * signing up
          */
         // creating new user with request
+        $img_name = ($req->gender == "male" ? "male" . rand(1, 2) : "female") . ".png";
+        $default_avatar = asset('public/profile_pics/default/' . $img_name);
         $user = new User([
             'name' => $req->name,
-            'username' => $req->username,
             'email' => $req->email,
+            'gender' => $req->gender,
+            'avatar' => $default_avatar,
             // hashing the password
             'password' => bcrypt($req->password)
         ]);
         // try to sign the user up
         if (!$user->save())
             return new ErrorResource(["message" => "can't sign you up"]);
-        
+
+        // generate username
+        $user->update(['username' => $user->name . $user->id]);
+
         // create an access token
         $tokenResult = $this->createToken($user, $req->remember_me);
 
