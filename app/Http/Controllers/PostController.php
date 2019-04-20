@@ -7,6 +7,9 @@ use App\Http\Resources\ErrorResource;
 use App\Http\Resources\LogResource;
 use App\Post;
 
+use App\Events\NewPostsCast;
+use App\Vote;
+
 class PostController extends Controller
 {
     /**
@@ -25,7 +28,7 @@ class PostController extends Controller
         /**
          * get posts
          */
-        $posts = Post::orderBy('id', 'desc')->paginate($lim);
+        $posts = Post::orderBy('id', 'desc')->with('user', 'comments', 'comments.user')->paginate($lim);
         // check if not empty
         if (!count($posts))
             return new ErrorResource(['message' => 'no posts found']);
@@ -33,7 +36,7 @@ class PostController extends Controller
         /**
          * output
          */
-        return new LogResource(['message' => 'found messages', 'posts' => $posts]);
+        return new LogResource(['message' => 'found posts', 'posts' => $posts]);
     }
 
     /**
@@ -69,7 +72,7 @@ class PostController extends Controller
             'tags' => $req->tags,
             'user_id' => $user['id']
         ]);
-        
+
         // try to save it
         if (!$post->save())
             return new ErrorResource(['message' => "can't save this post"]);
@@ -77,7 +80,13 @@ class PostController extends Controller
         /**
          * output
          */
-        $output = $post->with('user')->find($post->id);
+        $output = $post->with('user', 'comments')->find($post->id);
+        /**
+         * once i have a new post
+         * fire a broadcast Event
+         */
+        event(new NewPostsCast($output));
+
         return new LogResource(["message" => "posted", "post" => $output]);
 
     }
@@ -183,4 +192,49 @@ class PostController extends Controller
          */
         return new LogResource(["message" => "post deleted", "post" => $post]);
     }
+
+    // custom
+    public function vote(Request $req, $id)
+    {
+
+        $already_voted = true;
+
+        $req->validate([
+            "vote" => "required|integer",
+        ]);
+
+        // get the post
+        $post = Post::with('votes', 'votes.user')->find($id);
+
+        $vote = Vote::where("user_id", $req->user()['id'])->get()[0];
+        if (!$vote) {
+            $already_voted = false;
+            $vote = new Vote([
+                "vote" => $req->vote,
+                "user_id" => $req->user()['id'],
+                "post_id" => $id
+            ]);
+        }
+            
+
+        // check if exists
+        if (!$post)
+            return new ErrorResource(["message" => "can't find this post"]);
+
+        // vote up or down
+
+        $post->vote += $req->vote;
+        $vote->vote = intval($req->vote);
+
+        // try to save it
+        if (!$vote->save())
+            return new ErrorResource(["message" => "can't vote this post"]);
+        if (!$post->save())
+            return new ErrorResource(["message" => "can't vote this post"]);
+
+
+        // done
+        return new LogResource(["message" => "voted", "post" => $post]);
+    }
+
 }
