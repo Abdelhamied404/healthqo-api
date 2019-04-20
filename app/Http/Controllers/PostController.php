@@ -196,45 +196,67 @@ class PostController extends Controller
     // custom
     public function vote(Request $req, $id)
     {
-
-        $already_voted = true;
-
-        $req->validate([
-            "vote" => "required|integer",
-        ]);
-
+        /**
+         * pre
+         */
         // get the post
-        $post = Post::with('votes', 'votes.user')->find($id);
-
-        $vote = Vote::where("user_id", $req->user()['id'])->get()[0];
+        $post = Post::find($id);
+        // check if exists
+        if (!$post)
+            return new ErrorResource(["message" => "can't find this post"]);
+        
+        // if exists
+        // check if up or down
+        $parts = explode('/', $req->url());
+        $v = end($parts);
+        $v = ($v == "up") ? 1 : -1;
+        
+        // get the vote and check if already voted on this post
+        $already_voted = true;
+        $vote = Vote::where("user_id", $req->user()['id'])->get();
+        $vote = isset($vote[0]) ? $vote[0] : null;
         if (!$vote) {
             $already_voted = false;
             $vote = new Vote([
-                "vote" => $req->vote,
+                "vote" => $v,
                 "user_id" => $req->user()['id'],
                 "post_id" => $id
             ]);
         }
-            
-
-        // check if exists
-        if (!$post)
-            return new ErrorResource(["message" => "can't find this post"]);
 
         // vote up or down
-
-        $post->vote += $req->vote;
-        $vote->vote = intval($req->vote);
+        if ($already_voted) {
+            if ($v != $vote->vote) {
+                $post->vote += $v * 2;
+            }
+        } else {
+            $post->vote += $v;
+        }
+        $vote->vote = $v;
 
         // try to save it
-        if (!$vote->save())
-            return new ErrorResource(["message" => "can't vote this post"]);
-        if (!$post->save())
+        if (!($vote->save() && $post->save()))
             return new ErrorResource(["message" => "can't vote this post"]);
 
-
-        // done
+        // output
+        $post = Post::with('votes', 'votes.user')->find($id);
         return new LogResource(["message" => "voted", "post" => $post]);
+    }
+
+    public function unvote(Request $req, $id)
+    {
+        $vote = Vote::where("post_id", $id)->where("user_id", $req->user()['id']);
+        if (!isset($vote->get()[0]))
+            return new ErrorResource(["message" => "you haven't voted to this post yet"]);
+
+        $vote = $vote->get()[0];
+        $post = Post::with('votes', 'votes.user')->find($id);
+        $post->vote -= $vote->vote;
+
+        if (!($vote->delete() && $post->save()))
+            return new ErrorResource(["message" => "can't unvote this post"]);
+
+        return new LogResource(["message" => "unvoted"]);
     }
 
 }

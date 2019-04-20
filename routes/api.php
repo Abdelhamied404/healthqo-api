@@ -57,7 +57,9 @@ Route::group(['middleware' => ['HasAccess']], function () {
         Route::get('{id}', "PostController@show");
         // need auth
         Route::group(['middleware' => ['auth:api']], function () {
-            Route::get('{id}/vote', "PostController@vote");
+            Route::get('{id}/up', "PostController@vote");
+            Route::get('{id}/down', "PostController@vote");
+            Route::get('{id}/unvote', "PostController@unvote");
             Route::post('', "PostController@store");
             Route::put('{id}', "PostController@update");
             Route::delete('{id}', "PostController@destroy");
