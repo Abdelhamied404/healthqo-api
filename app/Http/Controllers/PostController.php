@@ -28,10 +28,28 @@ class PostController extends Controller
         /**
          * get posts
          */
-        $posts = Post::orderBy('id', 'desc')->with('user', 'comments', 'comments.user')->paginate($lim);
-        // check if not empty
-        if (!count($posts))
-            return new ErrorResource(['message' => 'no posts found']);
+         $posts = Post::latest()->with('user', 'comments', 'comments.user', 'votes')->paginate($lim);
+
+         // check if not empty
+         if (!count($posts))
+             return new ErrorResource(['message' => 'no posts found']);
+
+         // if user authanticated
+         if($req->user()){
+           // get posts user voted up or down
+           $votedPosts = Post::whereHas('votes', function ($query) use ($req){
+             $query->where('user_id', $req->user()['id']);
+           })->pluck('id')->toArray();
+
+           foreach ($posts as $post) {
+             $post_id = $post->id;
+             if(in_array($post_id, $votedPosts)){
+               $post->voted=1;
+             }else{
+               $post->voted=0;
+             }
+           }
+         }
 
         /**
          * output
@@ -81,11 +99,6 @@ class PostController extends Controller
          * output
          */
         $output = $post->with('user', 'comments')->find($post->id);
-        /**
-         * once i have a new post
-         * fire a broadcast Event
-         */
-        event(new NewPostsCast($output));
 
         return new LogResource(["message" => "posted", "post" => $output]);
 
@@ -204,13 +217,13 @@ class PostController extends Controller
         // check if exists
         if (!$post)
             return new ErrorResource(["message" => "can't find this post"]);
-        
+
         // if exists
         // check if up or down
         $parts = explode('/', $req->url());
         $v = end($parts);
         $v = ($v == "up") ? 1 : -1;
-        
+
         // get the vote and check if already voted on this post
         $already_voted = true;
         $vote = Vote::where("user_id", $req->user()['id'])->get();

@@ -53,10 +53,19 @@ Route::group(['middleware' => ['HasAccess']], function () {
      * post -- in-progress
      */
     Route::group(['prefix' => 'post'], function () {
-        Route::get('', "PostController@index");
         Route::get('{id}', "PostController@show");
+
+        // auth or not
+        $middleware = [];
+        if (\Request::header('Authorization'))
+          $middleware = ['middleware' => ['auth:api']];
+        Route::group($middleware, function (){
+          Route::get('', "PostController@index");
+        });
+
         // need auth
         Route::group(['middleware' => ['auth:api']], function () {
+            Route::get('voted', "PostController@votedPosts");
             Route::get('{id}/up', "PostController@vote");
             Route::get('{id}/down', "PostController@vote");
             Route::get('{id}/unvote', "PostController@unvote");
