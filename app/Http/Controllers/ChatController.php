@@ -8,6 +8,7 @@ use App\Http\Resources\LogResource;
 use App\Http\Resources\ErrorResource;
 use App\Recipient;
 use App\User;
+use App\Message;
 
 class ChatController extends Controller
 {
@@ -82,6 +83,39 @@ class ChatController extends Controller
         return new LogResource(["message" => "chat created", "chat" => $chat]);
     }
 
+    // send message
+    public function sendMessage(Request $req)
+    {
+        $user = $req->user();
+
+        $req->validate([
+            "chat_id" => "required|integer|exists:chats,id",
+            "message" => "required|string|"
+        ]);
+
+        $chat_id = $req->chat_id;
+        $body = $req->message;
+
+        // check if the user exists on this chat
+        $exists = Recipient::where('chat_id', $chat_id)->where("user_id", $user->id)->get();
+        if (!count($exists))
+            return new ErrorResource(["message" => "you are not member of this chat yet"]);
+
+
+        $msg = new Message([
+            "body" => $body,
+            "user_id" => $user->id,
+            "chat_id" => $chat_id
+        ]);
+
+        if (!$msg->save())
+            return new ErrorResource(["message" => "can't send your message"]);
+
+        $msg = $msg->with("user", "chat.recipients.user")->get();
+
+        return new LogResource(["message" => "message sent", "msg" => $msg]);
+    }
+
     /**
      * utils
      */
@@ -103,5 +137,6 @@ class ChatController extends Controller
             ->with('messages', 'recipients.user:id,name,username,avatar')->get();
 
     }
+
 
 }

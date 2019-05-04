@@ -39,6 +39,7 @@ class PostController extends Controller
             foreach ($post->votes()->get() as $vote) {
                 if ($vote->user()->get('id')[0]['id'] == $req->user()['id']) {
                     $post->voted = $vote->vote;
+                    break;
                 } else {
                     $post->voted = 0;
                 }
@@ -304,6 +305,32 @@ class PostController extends Controller
         $post = Post::with('votes.user', 'user', 'comments.user')->find($id);
         $post->voted = 0;
         return new LogResource(["message" => "unvoted", "post" => $post]);
+    }
+
+
+    // get profile posts
+    public function profile(Request $req)
+    {
+        $user = $req->user();
+        $lim = $req->lim ? $req->lim : 10;
+
+        $posts = Post::where("user_id", $user['id'])->with("votes.user")->paginate($lim);
+        if (!count($posts))
+            return new ErrorResource(['message' => 'no posts found']);
+
+        // check if this user has voted this post
+        foreach ($posts as $post) {
+            foreach ($post->votes()->get() as $vote) {
+                if ($vote->user()->get('id')[0]['id'] == $req->user()['id']) {
+                    $post->voted = $vote->vote;
+                    break;
+                } else {
+                    $post->voted = 0;
+                }
+            }
+        }
+
+        return new LogResource(['message' => 'posts found', "posts" => $posts]);
     }
 
 }
