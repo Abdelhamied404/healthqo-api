@@ -9,6 +9,7 @@ use App\Http\Resources\ErrorResource;
 use App\Recipient;
 use App\User;
 use App\Message;
+use App\Events\Chatting;
 
 class ChatController extends Controller
 {
@@ -111,7 +112,9 @@ class ChatController extends Controller
         if (!$msg->save())
             return new ErrorResource(["message" => "can't send your message"]);
 
-        $msg = $msg->with("user", "chat.recipients.user")->get();
+        $msg = Message::with("user", "chat.recipients.user")->find($msg->id);
+
+        event(new Chatting($msg));
 
         return new LogResource(["message" => "message sent", "msg" => $msg]);
     }
