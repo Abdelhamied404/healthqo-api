@@ -24,4 +24,9 @@ class Doctor extends Model
         return $this->belongsTo("App\User");
     }
 
+    public function appointments()
+    {
+        return $this->hasMany("App\Appointment");
+    }
+
 }

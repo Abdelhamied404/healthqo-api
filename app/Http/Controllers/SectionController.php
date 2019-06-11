@@ -55,6 +55,6 @@ class SectionController extends Controller
         /**
          * output
          */
-        return new LogResource(['message' => 'found doctors', 'doctos' => $doctors]);
+        return new LogResource(['message' => 'found doctors', 'doctors' => $doctors]);
     }
 }

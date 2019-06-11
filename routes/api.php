@@ -115,4 +115,21 @@ Route::group(['middleware' => ['HasAccess']], function () {
         });
     });
 
+    /**
+     * reservation system
+     */
+    Route::group(['prefix' => 'appointment'], function () {
+        // need auth
+        Route::group(['middleware' => ['auth:api']], function () {
+            Route::get('', 'AppointmentController@index');
+            Route::post('', 'AppointmentController@store');
+        });
+
+        Route::group(['prefix' => 'reserve'], function () {
+            Route::group(['middleware' => ['auth:api']], function () {
+                Route::post("{id}", "ReservationController@store");
+            });
+        });
+    });
+
 });
