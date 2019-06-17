@@ -15,8 +15,12 @@ class DoctorController extends Controller
     public function getRecommended(Request $req)
     {
         $lim = $req->lim ? $req->lim : 5;
-        $doctors = Doctor::orderBy('rate', 'desc')->with("user")->with("section")->paginate();
-        return response()->json($doctors, 200);
+        $doctors = Doctor::orderBy('rate', 'desc')->with("user")->with("section")->paginate($lim);
+
+        if(count($doctors) <=0)
+           return new ErrorResource(["message" => "no doctors found"]);
+
+        return new LogResource(["message" => "found doctors", 'doctors' => $doctors]);
     }
     public function store(Request $req)
     {

@@ -23,6 +23,7 @@ Route::group(['middleware' => ['HasAccess']], function () {
         Route::get('login', "UserController@login");
         Route::get('find/{q}', "UserController@find");
         Route::get('get/{id}', "UserController@get");
+        Route::get('getbyusername/{username}', "UserController@getByUsername");
         Route::post('', "UserController@signup");
         // need auth
         Route::group(['middleware' => ['auth:api']], function () {
@@ -55,7 +56,7 @@ Route::group(['middleware' => ['HasAccess']], function () {
     Route::group(['prefix' => 'post'], function () {
 
         // auth or not
-        // just for extra voted field 
+        // just for extra voted field
         // to check whether the user voted this post or not
         $middleware = [];
         if (\Request::header('Authorization'))
@@ -71,12 +72,12 @@ Route::group(['middleware' => ['HasAccess']], function () {
             // vote
             Route::get('{id}/up', "PostController@vote");
             Route::get('{id}/down', "PostController@vote");
-            // 
+            //
             // crud post
             Route::post('', "PostController@store");
             Route::put('{id}', "PostController@update");
             Route::delete('{id}', "PostController@destroy");
-            // 
+            //
             // deprecated
             Route::get('{id}/unvote', "PostController@unvote");
         });

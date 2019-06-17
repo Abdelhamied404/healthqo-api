@@ -17,6 +17,7 @@ class CreateSectionsTable extends Migration
             $table->bigIncrements('id');
             $table->string('name')->unique();
             $table->text('image');
+            $table->text('icon');
         });
     }
 

@@ -21,7 +21,7 @@ class SectionController extends Controller
         /**
          * get sections
          */
-        $sections = Section::paginate($lim);
+        $sections = Section::with("doctors.user")->paginate($lim);
         // check if not empty
         if (!count($sections))
             return new ErrorResource(['message' => 'no sections found']);

@@ -16,11 +16,23 @@ use Faker\Generator as Faker;
 */
 
 $factory->define(User::class, function (Faker $faker) {
+    $rand_gen = $faker->numberBetween(0,1)?"male":"female";
+    $rand_pic = $rand_gen == "male" ?
+    "http://asap.api/public/profile_pics/default/male1.png" :
+    "http://asap.api/public/profile_pics/default/female.png";
+
+
     return [
-        'name' => $faker->name,
+        'name' => $faker->firstName,
+        'username' => $faker->firstName."-".$faker->numberBetween(1,100),
         'email' => $faker->unique()->safeEmail,
-        'email_verified_at' => now(),
-        'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+        'password' => bcrypt("123456"), // password
+        'address' => $faker->word,
+        'state' => $faker->word,
+        'country' => $faker->word,
+        'phone' => $faker->randomNumber(null, false),
+        'gender' => $rand_gen,
+        'avatar' => $rand_pic,
         'remember_token' => Str::random(10),
     ];
 });

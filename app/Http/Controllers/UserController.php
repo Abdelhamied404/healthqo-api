@@ -207,6 +207,15 @@ class UserController extends Controller
         return new LogResource(["message" => 'found users', 'user' => $user]);
     }
 
+    public function getByUsername(Request $req, $username)
+    {
+        $user = User::where("username", $username)->with("doctor.section")->get()[0];
+        if (!$user) {
+            return new ErrorResource(['message' => 'no user found']);
+        }
+        return new LogResource(["message" => 'found user', 'user' => $user]);
+    }
+
     /**
      * utils
      */
@@ -215,7 +224,7 @@ class UserController extends Controller
         // create an access token
         $tokenResult = $user->createToken('Personal Access Token');
         $token = $tokenResult->token;
-        // if user wanted to remember him 
+        // if user wanted to remember him
         if ($remember_me)
             $token->expires_at = Carbon::now()->addWeeks(1);
         // save this token back to database

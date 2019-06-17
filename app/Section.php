@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Section extends Model
 {
     public $timestamps = false;
-    protected $fillable = ['name', 'image'];
+    protected $fillable = ['name', 'image', 'icon'];
 
-    public function doctor()
+    public function doctors()
     {
-        return $this->hasOne('App\Doctor');
+        return $this->hasMany('App\Doctor');
     }
 }
