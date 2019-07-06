@@ -16,15 +16,25 @@ use Faker\Generator as Faker;
 */
 
 $factory->define(User::class, function (Faker $faker) {
-    $rand_gen = $faker->numberBetween(0,1)?"male":"female";
-    $rand_pic = $rand_gen == "male" ?
-    "http://asap.api/public/profile_pics/default/male1.png" :
-    "http://asap.api/public/profile_pics/default/female.png";
 
+    $male_pics = [
+        "http://asap.api/public/profile_pics/default/male1.png" ,
+        "http://asap.api/public/profile_pics/default/male2.png" ,
+    ];
+    $female_pics = [
+        "http://asap.api/public/profile_pics/default/female.png",
+    ];
+
+    $rand_gen = $faker->numberBetween(0,1)?"male":"female";
+    $rand_pic = $rand_gen == "male" ? $male_pics[array_rand($male_pics)] : $female_pics[array_rand($female_pics)];
+
+    $rand_name = $faker->firstName($rand_gen);
+
+    static $i = 1;
 
     return [
-        'name' => $faker->firstName,
-        'username' => $faker->firstName."-".$faker->numberBetween(1,100),
+        'name' => $rand_name,
+        'username' => $rand_name."-".$i++,
         'email' => $faker->unique()->safeEmail,
         'password' => bcrypt("123456"), // password
         'address' => $faker->word,

@@ -22,7 +22,9 @@ class UserController extends Controller
         if (!$req->user()) {
             return new ErrorResource(["message" => "something went wrong please login again"]);
         }
-        return new LogResource(['message' => "you are authanticated", 'user' => $req->user()]);
+        $id = $req->user()["id"];
+        $user = User::with("doctor.section")->find($id);
+        return new LogResource(['message' => "you are authanticated", 'user' => $user]);
     }
 
     public function signup(Request $req)

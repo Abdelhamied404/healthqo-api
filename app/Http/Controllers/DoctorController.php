@@ -9,6 +9,9 @@ use App\Http\Resources\LogResource;
 use Illuminate\Support\Facades\DB;
 use App\Section;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+
 
 class DoctorController extends Controller
 {
@@ -54,11 +57,24 @@ class DoctorController extends Controller
             $doctor->is_trusted = 0;
             $doctor->rate = 0;
         }
-        // assign all except is trusted and rate
+        // assign all except is trusted, certificate and rate
         foreach ($req->all() as $key => $value) {
-            if (in_array($key, $cols) && $key != "is_trusted" && $key != "rate") {
+            if (in_array($key, $cols) && $key != "is_trusted" && $key != "certificate" && $key != "rate") {
                 $doctor[$key] = $value;
             }
+        }
+
+        // upload the certificate
+        $certificate = $req->file('certificate');
+        if($certificate){
+            // generate unique file name for the doctor and save it to the disk
+            $img_name = $curr_user_id . "-certificate." . $certificate->getClientOriginalExtension();
+            Storage::disk('local')->put($img_name, File::get($certificate));
+            // move to public and get this path
+            $certificate->move(public_path() . '/public/certificates/', $img_name);
+            $path = asset('public/certificates/' . $img_name);
+            // assign the path to user's avatar
+            $doctor["certificate"] = $path;
         }
 
         /**
@@ -70,8 +86,8 @@ class DoctorController extends Controller
         /**
          * output
          */
-        $output = $doctor->with('user')->with('section')->get();
-        return new LogResource(["message" => "doctor updated", 'doctor' => $output]);
+        $doctor = Doctor::where("user_id", $curr_user_id)->with('user')->with('section')->first();
+        return new LogResource(["message" => "doctor updated", 'doctor' => $doctor]);
     }
 
 

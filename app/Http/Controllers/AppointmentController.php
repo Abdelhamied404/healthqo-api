@@ -27,12 +27,14 @@ class AppointmentController extends Controller
         $doc_id = $req->doctor_id;
 
         $appointments = Appointment::with("doctor.user", "reservation.user")->where("doctor_id", $doc_id)->paginate($lim);
+        return new LogResource(["message" => "all appointments", "appointments" => $this->group($appointments)]);
 
-        if (!count($appointments)) {
-            return new ErrorResource(["message" => "no appointments found"]);
-        }
 
-        return new LogResource(["message" => "all appointments", "appointments" => $appointments]);
+        // if (!count($appointments)) {
+        //     return new ErrorResource(["message" => "no appointments found"]);
+        // }
+
+        // return new LogResource(["message" => "all appointments", "appointments" => $appointments]);
     }
 
     /**
@@ -114,6 +116,41 @@ class AppointmentController extends Controller
             return false;
 
         return true;
+    }
+
+    public function group($list)
+    {
+        $grouped = [];
+        $list = $list->toArray()["data"];
+
+        while (count($list)) {
+            $checker = null;
+            $row = [];
+            foreach ($list as $i => $ele) {
+                if ($i == 0) {
+                    // checks if it's the first element
+                    array_push($row, $ele);
+                    array_shift($list);
+                    $checker = explode(" ", $ele["time"])[0];
+                }
+                else{
+                    // checks on all other values
+                    $date = explode(" ", $ele["time"])[0];
+                    if ($checker == $date) {
+                        array_push($row, $ele);
+                        array_shift($list);
+                    }else{
+                        continue;
+                    }
+                }
+            }
+
+            array_push($grouped, $row);
+        }
+
+        return($grouped);
+
+
     }
 
 }

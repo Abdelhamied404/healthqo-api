@@ -127,7 +127,7 @@ class ChatController extends Controller
         // get all chats that belongs to user
         return Chat::whereHas('recipients', function ($query) use ($user_id) {
             $query->where('user_id', $user_id);
-        })->with('messages', 'recipients.user:id,name,username,avatar')->get();
+        })->with('messages', 'recipients.user:id,name,username,avatar')->orderBy('id', 'DESC')->get();
     }
 
     private function getChatsbetween($recipients)

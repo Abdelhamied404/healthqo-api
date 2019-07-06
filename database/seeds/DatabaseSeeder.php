@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         factory(Doctor::class, 30)->create();
         factory(Post::class, 50)->create();
         factory(Comment::class, 100)->create();
-        factory(Appointment::class, 10)->create();
+        factory(Appointment::class, 100)->create();
         factory(Chat::class, 20)->create();
         factory(Message::class, 200)->create();
         factory(Recipient::class, 40)->create();
