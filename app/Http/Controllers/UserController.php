@@ -60,7 +60,7 @@ class UserController extends Controller
             return new ErrorResource(["message" => "can't sign you up"]);
 
         // generate username
-        $user->update(['username' => $user->name . $user->id]);
+        $user->update(['username' => $user->name . "-" . $user->id]);
 
         // create an access token
         $tokenResult = $this->createToken($user, $req->remember_me);
@@ -235,5 +235,4 @@ class UserController extends Controller
 
         return $tokenResult;
     }
-
 }

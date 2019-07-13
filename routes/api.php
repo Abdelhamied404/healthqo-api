@@ -40,6 +40,7 @@ Route::group(['middleware' => ['HasAccess']], function () {
     Route::group(['prefix' => 'doctor'], function () {
         Route::get('recommended', "DoctorController@getRecommended");
         Route::post('', "DoctorController@store")->middleware('auth:api');
+        Route::get("find/{q}", "DoctorController@find");
     });
 
     /**
@@ -124,6 +125,10 @@ Route::group(['middleware' => ['HasAccess']], function () {
         Route::group(['middleware' => ['auth:api']], function () {
             Route::get('', 'AppointmentController@index');
             Route::post('', 'AppointmentController@store');
+            Route::group(['prefix' => 'code'], function () {
+                Route::get('check', "AppointmentController@checkCode");
+                Route::get('get', "AppointmentController@getCode");
+            });
         });
 
         Route::group(['prefix' => 'reserve'], function () {
@@ -132,5 +137,4 @@ Route::group(['middleware' => ['HasAccess']], function () {
             });
         });
     });
-
 });

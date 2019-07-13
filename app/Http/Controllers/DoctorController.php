@@ -11,7 +11,7 @@ use App\Section;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
-
+use App\User;
 
 class DoctorController extends Controller
 {
@@ -20,8 +20,8 @@ class DoctorController extends Controller
         $lim = $req->lim ? $req->lim : 5;
         $doctors = Doctor::orderBy('rate', 'desc')->with("user")->with("section")->paginate($lim);
 
-        if(count($doctors) <=0)
-           return new ErrorResource(["message" => "no doctors found"]);
+        if (count($doctors) <= 0)
+            return new ErrorResource(["message" => "no doctors found"]);
 
         return new LogResource(["message" => "found doctors", 'doctors' => $doctors]);
     }
@@ -66,7 +66,7 @@ class DoctorController extends Controller
 
         // upload the certificate
         $certificate = $req->file('certificate');
-        if($certificate){
+        if ($certificate) {
             // generate unique file name for the doctor and save it to the disk
             $img_name = $curr_user_id . "-certificate." . $certificate->getClientOriginalExtension();
             Storage::disk('local')->put($img_name, File::get($certificate));
@@ -90,5 +90,17 @@ class DoctorController extends Controller
         return new LogResource(["message" => "doctor updated", 'doctor' => $doctor]);
     }
 
+    public function find(Request $req, $q)
+    {
+        $lim = $req->lim ? $req->lim : 5;
 
+        $users = Doctor::with("user")->whereHas("user", function ($query) use ($q) {
+            $query->where("name", "LIKE", "$q%");
+        })->paginate($lim);
+
+        if (!count($users)) {
+            return new ErrorResource(['message' => 'no users found']);
+        }
+        return new LogResource(["message" => 'found users', 'users' => $users]);
+    }
 }

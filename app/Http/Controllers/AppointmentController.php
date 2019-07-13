@@ -8,7 +8,7 @@ use App\Doctor;
 use App\Http\Resources\LogResource;
 use App\Http\Resources\ErrorResource;
 use Illuminate\Database\QueryException;
-
+use App\Reservation;
 
 class AppointmentController extends Controller
 {
@@ -71,42 +71,56 @@ class AppointmentController extends Controller
         return new LogResource(["message" => "saved!", "appointments" => $appois]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function checkCode(Request $req)
     {
-        //
+        $req->validate([
+            "code" => "required",
+        ]);
+
+        $user = $req->user();
+        $user_id = $user["id"];
+
+        if ($this->isDoctor($user_id)) {
+
+            $code = $req->code;
+            $reservation =  Reservation::where("code", $code)->with("appointment.doctor")->with("user")->get();
+
+            if ($reservation->count()) {
+                $reservation = $reservation[0];
+                if ($reservation->appointment->doctor->user_id == $user_id) {
+                    return new LogResource(["message" => "correct code", "data" => $reservation]);
+                } else {
+                    return new ErrorResource(["message" => "wrong code"]);
+                }
+            } else {
+                return new ErrorResource(["message" => "wrong code"]);
+            }
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    public function getCode(Request $req)
     {
-        //
+        $req->validate([
+            "id" => "required|exists:appointments,id"
+        ]);
+
+        $appointment = Appointment::with("reservation.user")->find($req->id);
+        if ($appointment->reservation->user->id == $req->user()["id"]) {
+            $code = $appointment->reservation->code;
+        } else {
+            $code = "you can't have this appointment";
+        }
+        echo $code;
     }
 
 
     // custom utils
+    public function isDoctor($id)
+    {
+        return Doctor::with("user")->where("user_id", $id)->get()->count();
+    }
+
     public function check($id)
     {
         $appointment = Appointment::find($id);
@@ -132,14 +146,13 @@ class AppointmentController extends Controller
                     array_push($row, $ele);
                     array_shift($list);
                     $checker = explode(" ", $ele["time"])[0];
-                }
-                else{
+                } else {
                     // checks on all other values
                     $date = explode(" ", $ele["time"])[0];
                     if ($checker == $date) {
                         array_push($row, $ele);
                         array_shift($list);
-                    }else{
+                    } else {
                         continue;
                     }
                 }
@@ -148,9 +161,6 @@ class AppointmentController extends Controller
             array_push($grouped, $row);
         }
 
-        return($grouped);
-
-
+        return ($grouped);
     }
-
 }
